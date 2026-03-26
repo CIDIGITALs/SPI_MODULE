@@ -51,4 +51,4 @@ O projeto conta com um script automatizado que varre a estrutura de diretórios,
 
 1. Clone o repositório:
    ```bash
-   git clone <link-do-repo>
+   git clone https://github.com/CIDIGITALs/SPI_MODULE
