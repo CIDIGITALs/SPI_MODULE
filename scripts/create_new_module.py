@@ -10,7 +10,7 @@ def main():
     module_name = sys.argv[1]
     
     # Define os caminhos
-    project_root = Path(__file__).parent
+    project_root = Path(__file__).parent.parent
     module_dir = project_root / "modules" / module_name
     rtl_dir = module_dir / "rtl"
     tb_dir = module_dir / "tb"

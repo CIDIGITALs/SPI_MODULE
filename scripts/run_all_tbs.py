@@ -4,7 +4,7 @@ from pathlib import Path
 
 def main():
     script_dir = Path(__file__).parent
-    project_root = Path(__file__).parent
+    project_root = Path(__file__).parent.parent
     modules_dir = project_root / "modules"
 
     print("Iniciando a bateria de testes...\n")
