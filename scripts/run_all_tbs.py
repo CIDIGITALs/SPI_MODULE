@@ -9,9 +9,7 @@ def main():
 
     print("Iniciando a bateria de testes...\n")
 
-    # A SOLUÇÃO INTELIGENTE (Flags -y): Coleta todas as pastas 'rtl' do projeto.
-    # Em vez de compilar todos os arquivos na força bruta, vamos dizer ao compilador para 
-    # usar essas pastas como "bibliotecas de busca".
+    # Diz ao compilador utiliar esses diretorios em sua busca pelos modulos 
     rtl_dirs = [d for d in modules_dir.glob("*/rtl") if d.is_dir()]
     
     # Monta a lista de flags "-y pasta1 -y pasta2 ..."
