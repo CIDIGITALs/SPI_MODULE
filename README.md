@@ -29,7 +29,7 @@ Este projeto utiliza uma abordagem *IP-centric*. Cada submódulo possui seu pró
 * `modules/spi_master_system/`: Módulo *top-level* que integra o sistema e gerencia a interface física do protocolo SPI (`sclk`, `mosi`, `miso`, `cs`).
 * `modules/spi_fsm/`: Lógica sequencial e máquina de estados para controle temporal das transações.
 * `modules/spi_shift_register/`: Instanciação dos registradores para manipulação e deslocamento dos bits de dados.
-* `scripts/`: Ferramentas de automação em Python para compilação e execução dos *testbenches* utilizando Icarus Verilog.
+* `scripts/`: Ferramentas de automação em Python para compilação, testes e geração de boilerplate.
 * `docs/`: Relatório do projeto contendo a motivação, descrição da arquitetura, diagrama de blocos e documentação das interfaces.
 
 ```text
@@ -38,7 +38,7 @@ spi-master-project/
 │   └── relatorio_projeto_spi.pdf
 ├── modules/
 │   ├── spi_fsm/
-│   │   ├── resultados/       # Logs e .vcd gerados automaticamente
+│   │   ├── resultados/       
 │   │   ├── rtl/
 │   │   │   └── spi_fsm.v
 │   │   └── tb/
@@ -56,13 +56,24 @@ spi-master-project/
 │       └── tb/
 │           └── spi_shift_register_tb.v
 ├── scripts/
-│   └── run_all_tbs.py
+│   ├── run_all_tbs.py
+│   └── create_new_module.py
 ├── .gitignore
 └── README.md
 
 ## 🛠️ Como Compilar e Simular
 
 O projeto conta com um script automatizado que varre a estrutura de diretórios, compila os módulos Verilog e executa a simulação principal.
+
+## Scripts
+
+run_all_tbs.py 
+Testa todos os modulos de uma vez e gera os arquivos de log e vcd na respectiva pasta de results
+
+create_new_module.py
+uso: python scripts/create_module.py <nome_do_modulo>"
+Gera a estrutura de pastas de um modulo novo no repositorio com um esqueleto de testbench e module
+
 
 1. Clone o repositório:
    ```bash
