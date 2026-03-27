@@ -12,7 +12,7 @@ Projeto de um módulo SPI mestre em Verilog-2001, desenvolvido com suporte a mú
 
 # Controlador SPI Mestre Multi-Escravo
 
-Projeto de um módulo SPI mestre em Verilog-2001, desenvolvido com suporte a múltiplos escravos, parametrizável e com controle de *chip select*. O design é modular e projetado para suportar transações complexas, desenvolvido como parte das atividades de Circuitos Digitais na FEEC/Unicamp.
+Projeto de um módulo SPI mestre em Verilog-2001, desenvolvido com suporte a múltiplos escravos, parametrizável e com controle de *chip select*. O design é modular e projetado para suportar transações complexas, desenvolvido como parte das atividades de prova do curso CI DIGITAL.
 
 ## 🚀 Características Principais
 
