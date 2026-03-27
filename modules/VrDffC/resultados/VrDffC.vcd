@@ -7,12 +7,14 @@ $end
 $timescale
 	1ns
 $end
-$scope module tb_VrDff $end
-$var wire 1 ! Q $end
+$scope module tb_VrDffC $end
+$var wire 1 ! DATA_OUT $end
 $var reg 1 " CLK $end
-$var reg 1 # D $end
+$var reg 1 # DATA_IN $end
+$var reg 1 $ RESET $end
 $scope module dut $end
 $var wire 1 " CLK $end
+$var wire 1 $ CLR $end
 $var wire 1 # D $end
 $var reg 1 ! Q $end
 $upscope $end
@@ -23,42 +25,69 @@ $dumpall
 $end
 #0
 $dumpvars
+1$
 0#
 0"
-x!
+0!
 $end
 #5
-0!
 1"
 #10
 0"
-1#
+0$
 #15
-1!
 1"
 #20
 0"
-0#
+1#
 #25
-0!
+1!
 1"
 #30
 0"
-1#
+0#
 #35
-1!
+0!
 1"
 #40
 0"
-0#
+1#
 #45
-0!
+1!
 1"
 #50
 0"
-1#
+0#
 #55
-1!
+0!
 1"
 #60
+0"
+1#
+#65
+1!
+1"
+#70
+0!
+0"
+1$
+#75
+1"
+#80
+0"
+0$
+#85
+1!
+1"
+#90
+0"
+#95
+1"
+#100
+0"
+0#
+#105
+0!
+1"
+#110
 0"
