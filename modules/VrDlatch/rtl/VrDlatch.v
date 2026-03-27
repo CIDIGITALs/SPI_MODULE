@@ -1,7 +1,7 @@
 module VrDlatch (
     input D,       
     input G,       
-    output reg Q   
+    output reg Q
 );
 
   always @(D or G) begin
