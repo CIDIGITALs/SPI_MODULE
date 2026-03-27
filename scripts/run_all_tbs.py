@@ -9,12 +9,18 @@ def main():
 
     print("Iniciando a bateria de testes...\n")
 
-    # Faz uma varredura (rglob) e coleta TODOS os arquivos .v presentes 
-    # dentro de QUALQUER pasta 'rtl' do projeto inteiro.
-    global_rtl_files = list(modules_dir.rglob("rtl/*.v"))
+    # A SOLUÇÃO INTELIGENTE (Flags -y): Coleta todas as pastas 'rtl' do projeto.
+    # Em vez de compilar todos os arquivos na força bruta, vamos dizer ao compilador para 
+    # usar essas pastas como "bibliotecas de busca".
+    rtl_dirs = [d for d in modules_dir.glob("*/rtl") if d.is_dir()]
     
-    if not global_rtl_files:
-        print("[AVISO] Nenhum arquivo RTL encontrado no projeto.")
+    # Monta a lista de flags "-y pasta1 -y pasta2 ..."
+    lib_flags = []
+    for d in rtl_dirs:
+        lib_flags.extend(["-y", str(d)])
+
+    if not rtl_dirs:
+        print("[AVISO] Nenhuma pasta RTL encontrada no projeto para ser usada como biblioteca.")
 
     # Itera sobre cada pasta dentro de modules/
     # Descobre cada módulo presente na pasta
@@ -37,26 +43,25 @@ def main():
         # Cria a pasta resultados se não existir
         res_dir.mkdir(exist_ok=True)
 
-        # Pega APENAS os arquivos .v do Testbench (TB) Deste módulo específico
-        tb_files = list(tb_dir.glob("*.v"))
-        if not tb_files:
-            print(f"[{module_name}] Nenhum arquivo Testbench (.v) encontrado. Pulando.\n")
+        # Pega APENAS os arquivos do módulo atual (RTL local e TB específico)
+        local_files = list(rtl_dir.glob("*.v")) + list(tb_dir.glob("*.v"))
+        if not local_files:
+            print(f"[{module_name}] Nenhum arquivo .v (RTL ou TB) encontrado. Pulando.\n")
             continue
 
-        # Combina TODOS os RTLs do projeto com o TB específico deste módulo
-        files_to_compile = global_rtl_files + tb_files
-
         # Converte os caminhos dos arquivos para strings e define os caminhos de saída
-        file_paths = [str(f) for f in files_to_compile]
+        file_paths = [str(f) for f in local_files]
         # O arquivo de saída do compilador e o log da simulação serão salvos dentro da pasta resultados/
         output_vvp = res_dir / "sim.vvp"
         log_file = res_dir / "sim.log"
 
-        #Compilação
-        compile_cmd = ["iverilog", "-o", str(output_vvp)] + file_paths
+        # Compilação Inteligente
+        # O comando passa os arquivos locais E as flags de busca de biblioteca (-y)
+        compile_cmd = ["iverilog", "-o", str(output_vvp)] + lib_flags + file_paths
         
-        # Compila TODOS os modulos RTL e o testbench atual e cospe o resultado em sim.vvp dentro da pasta resultados/ do módulo. O comando é algo como:
-        # EX: iverilog -o modules/VrDlatch/resultados/sim.vvp modules/VrDlatch/rtl/*.v modules/spi_fsm/rtl/*.v modules/VrDlatch/tb/*.v
+        # Compila o modulo RTL e o testbench atual. Caso o modulo instancie outros modulos (ex: mestre instanciando fsm),
+        # o compilador vai procurar automaticamente nas pastas listadas nas flags -y.
+        # EX: iverilog -o modules/spi_master_system/resultados/sim.vvp -y modules/spi_fsm/rtl -y modules/spi_master_system/rtl modules/spi_master_system/rtl/*.v modules/spi_master_system/tb/*.v
         try:
             # compila de fato
             subprocess.run(compile_cmd, check=True, capture_output=True, text=True)
