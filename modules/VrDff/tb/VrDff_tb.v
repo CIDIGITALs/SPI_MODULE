@@ -12,19 +12,22 @@ module tb_VrDff;
         .Q(Q)
     );
 
+    initial CLK = 0;
+    always #5 CLK = ~CLK; 
+
     initial begin
         $dumpfile("VrDff.vcd");
         $dumpvars(0, tb_VrDff);
         $monitor("t=%0t CLK=%b D=%b | Q=%b", $time, CLK, D, Q);
        
-        CLK = 0;
-        forever #5 CLK = ~CLK; 
         D = 0; #10;
         D = 1; #10;
         D = 0; #10;
         D = 1; #10;
         D = 0; #10;
         D = 1; #10;
+        
+        $finish; 
     end
 
 endmodule

@@ -7,15 +7,18 @@
 :vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_textio.vpi";
 :vpi_module "/usr/lib/x86_64-linux-gnu/ivl/v2005_math.vpi";
 :vpi_module "/usr/lib/x86_64-linux-gnu/ivl/va_math.vpi";
-S_0x6110cdc1f840 .scope module, "FlipFlopD" "FlipFlopD" 2 1;
+S_0x57615305fe00 .scope module, "VrDff" "VrDff" 2 1;
  .timescale 0 0;
-    .port_info 0 /INPUT 1 "clk";
-    .port_info 1 /INPUT 1 "reset";
-o0x792c69ae6018 .functor BUFZ 1, C4<z>; HiZ drive
-v0x6110cdc31790_0 .net "clk", 0 0, o0x792c69ae6018;  0 drivers
-o0x792c69ae6048 .functor BUFZ 1, C4<z>; HiZ drive
-v0x6110cdc4a360_0 .net "reset", 0 0, o0x792c69ae6048;  0 drivers
-S_0x6110cdc30230 .scope module, "spi_master_system" "spi_master_system" 3 1;
+    .port_info 0 /INPUT 1 "CLK";
+    .port_info 1 /INPUT 1 "D";
+    .port_info 2 /OUTPUT 1 "Q";
+o0x7f6975cc0018 .functor BUFZ 1, C4<z>; HiZ drive
+v0x576153072250_0 .net "CLK", 0 0, o0x7f6975cc0018;  0 drivers
+o0x7f6975cc0048 .functor BUFZ 1, C4<z>; HiZ drive
+v0x57615308af30_0 .net "D", 0 0, o0x7f6975cc0048;  0 drivers
+v0x57615308aff0_0 .var "Q", 0 0;
+E_0x576153037950 .event posedge, v0x576153072250_0;
+S_0x576153070370 .scope module, "spi_master_system" "spi_master_system" 3 1;
  .timescale 0 0;
     .port_info 0 /INPUT 1 "clk";
     .port_info 1 /INPUT 1 "reset";
@@ -29,110 +32,117 @@ S_0x6110cdc30230 .scope module, "spi_master_system" "spi_master_system" 3 1;
     .port_info 9 /OUTPUT 1 "mosi";
     .port_info 10 /INPUT 1 "miso";
     .port_info 11 /OUTPUT 4 "cs";
-P_0x6110cdc1d330 .param/l "MAX_BITS" 0 3 3, +C4<00000000000000000000000000010000>;
-P_0x6110cdc1d370 .param/l "N_SLAVES" 0 3 2, +C4<00000000000000000000000000000100>;
-o0x792c69ae60d8 .functor BUFZ 1, C4<z>; HiZ drive
-v0x6110cdc4a480_0 .net "clk", 0 0, o0x792c69ae60d8;  0 drivers
-o0x792c69ae6108 .functor BUFZ 40, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
-v0x6110cdc4a540_0 .net "cmd_data", 39 0, o0x792c69ae6108;  0 drivers
-o0x792c69ae6138 .functor BUFZ 1, C4<z>; HiZ drive
-v0x6110cdc4a620_0 .net "cmd_ready", 0 0, o0x792c69ae6138;  0 drivers
-o0x792c69ae6168 .functor BUFZ 1, C4<z>; HiZ drive
-v0x6110cdc4a6f0_0 .net "cmd_valid", 0 0, o0x792c69ae6168;  0 drivers
-o0x792c69ae6198 .functor BUFZ 4, C4<zzzz>; HiZ drive
-v0x6110cdc4a7b0_0 .net "cs", 3 0, o0x792c69ae6198;  0 drivers
-o0x792c69ae61c8 .functor BUFZ 1, C4<z>; HiZ drive
-v0x6110cdc4a8e0_0 .net "miso", 0 0, o0x792c69ae61c8;  0 drivers
-o0x792c69ae61f8 .functor BUFZ 1, C4<z>; HiZ drive
-v0x6110cdc4a9a0_0 .net "mosi", 0 0, o0x792c69ae61f8;  0 drivers
-o0x792c69ae6228 .functor BUFZ 1, C4<z>; HiZ drive
-v0x6110cdc4aa60_0 .net "reset", 0 0, o0x792c69ae6228;  0 drivers
-o0x792c69ae6258 .functor BUFZ 16, C4<zzzzzzzzzzzzzzzz>; HiZ drive
-v0x6110cdc4ab20_0 .net "rsp_data", 15 0, o0x792c69ae6258;  0 drivers
-o0x792c69ae6288 .functor BUFZ 1, C4<z>; HiZ drive
-v0x6110cdc4ac00_0 .net "rsp_ready", 0 0, o0x792c69ae6288;  0 drivers
-o0x792c69ae62b8 .functor BUFZ 1, C4<z>; HiZ drive
-v0x6110cdc4acc0_0 .net "rsp_valid", 0 0, o0x792c69ae62b8;  0 drivers
-o0x792c69ae62e8 .functor BUFZ 1, C4<z>; HiZ drive
-v0x6110cdc4ad80_0 .net "sclk", 0 0, o0x792c69ae62e8;  0 drivers
-S_0x6110cdc315d0 .scope module, "tb_VrDlatch" "tb_VrDlatch" 4 3;
+P_0x57615305d580 .param/l "MAX_BITS" 0 3 3, +C4<00000000000000000000000000010000>;
+P_0x57615305d5c0 .param/l "N_SLAVES" 0 3 2, +C4<00000000000000000000000000000100>;
+o0x7f6975cc0138 .functor BUFZ 1, C4<z>; HiZ drive
+v0x57615308b140_0 .net "clk", 0 0, o0x7f6975cc0138;  0 drivers
+o0x7f6975cc0168 .functor BUFZ 40, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
+v0x57615308b200_0 .net "cmd_data", 39 0, o0x7f6975cc0168;  0 drivers
+o0x7f6975cc0198 .functor BUFZ 1, C4<z>; HiZ drive
+v0x57615308b2e0_0 .net "cmd_ready", 0 0, o0x7f6975cc0198;  0 drivers
+o0x7f6975cc01c8 .functor BUFZ 1, C4<z>; HiZ drive
+v0x57615308b3b0_0 .net "cmd_valid", 0 0, o0x7f6975cc01c8;  0 drivers
+o0x7f6975cc01f8 .functor BUFZ 4, C4<zzzz>; HiZ drive
+v0x57615308b470_0 .net "cs", 3 0, o0x7f6975cc01f8;  0 drivers
+o0x7f6975cc0228 .functor BUFZ 1, C4<z>; HiZ drive
+v0x57615308b5a0_0 .net "miso", 0 0, o0x7f6975cc0228;  0 drivers
+o0x7f6975cc0258 .functor BUFZ 1, C4<z>; HiZ drive
+v0x57615308b660_0 .net "mosi", 0 0, o0x7f6975cc0258;  0 drivers
+o0x7f6975cc0288 .functor BUFZ 1, C4<z>; HiZ drive
+v0x57615308b720_0 .net "reset", 0 0, o0x7f6975cc0288;  0 drivers
+o0x7f6975cc02b8 .functor BUFZ 16, C4<zzzzzzzzzzzzzzzz>; HiZ drive
+v0x57615308b7e0_0 .net "rsp_data", 15 0, o0x7f6975cc02b8;  0 drivers
+o0x7f6975cc02e8 .functor BUFZ 1, C4<z>; HiZ drive
+v0x57615308b8c0_0 .net "rsp_ready", 0 0, o0x7f6975cc02e8;  0 drivers
+o0x7f6975cc0318 .functor BUFZ 1, C4<z>; HiZ drive
+v0x57615308b980_0 .net "rsp_valid", 0 0, o0x7f6975cc0318;  0 drivers
+o0x7f6975cc0348 .functor BUFZ 1, C4<z>; HiZ drive
+v0x57615308ba40_0 .net "sclk", 0 0, o0x7f6975cc0348;  0 drivers
+S_0x576153071b50 .scope module, "tb_VrDlatch" "tb_VrDlatch" 4 3;
  .timescale -9 -9;
-v0x6110cdc4b550_0 .var "D", 0 0;
-v0x6110cdc4b620_0 .var "G", 0 0;
-v0x6110cdc4b6f0_0 .net "Q", 0 0, v0x6110cdc4b430_0;  1 drivers
-S_0x6110cdc4b030 .scope module, "dut" "VrDlatch" 4 9, 5 1 0, S_0x6110cdc315d0;
+v0x57615308c210_0 .var "D", 0 0;
+v0x57615308c2e0_0 .var "G", 0 0;
+v0x57615308c3b0_0 .net "Q", 0 0, v0x57615308c0f0_0;  1 drivers
+S_0x57615308bcf0 .scope module, "dut" "VrDlatch" 4 9, 5 1 0, S_0x576153071b50;
  .timescale 0 0;
     .port_info 0 /INPUT 1 "D";
     .port_info 1 /INPUT 1 "G";
     .port_info 2 /OUTPUT 1 "Q";
-v0x6110cdc4b290_0 .net "D", 0 0, v0x6110cdc4b550_0;  1 drivers
-v0x6110cdc4b370_0 .net "G", 0 0, v0x6110cdc4b620_0;  1 drivers
-v0x6110cdc4b430_0 .var "Q", 0 0;
-E_0x6110cdbf7950 .event anyedge, v0x6110cdc4b370_0, v0x6110cdc4b290_0;
-    .scope S_0x6110cdc4b030;
+v0x57615308bf50_0 .net "D", 0 0, v0x57615308c210_0;  1 drivers
+v0x57615308c030_0 .net "G", 0 0, v0x57615308c2e0_0;  1 drivers
+v0x57615308c0f0_0 .var "Q", 0 0;
+E_0x576153037bc0 .event anyedge, v0x57615308c030_0, v0x57615308bf50_0;
+    .scope S_0x57615305fe00;
 T_0 ;
-    %wait E_0x6110cdbf7950;
-    %load/vec4 v0x6110cdc4b370_0;
-    %cmpi/e 1, 0, 1;
-    %jmp/0xz  T_0.0, 4;
-    %load/vec4 v0x6110cdc4b290_0;
-    %assign/vec4 v0x6110cdc4b430_0, 0;
-T_0.0 ;
+    %wait E_0x576153037950;
+    %load/vec4 v0x57615308af30_0;
+    %assign/vec4 v0x57615308aff0_0, 0;
     %jmp T_0;
-    .thread T_0, $push;
-    .scope S_0x6110cdc315d0;
+    .thread T_0;
+    .scope S_0x57615308bcf0;
 T_1 ;
+    %wait E_0x576153037bc0;
+    %load/vec4 v0x57615308c030_0;
+    %cmpi/e 1, 0, 1;
+    %jmp/0xz  T_1.0, 4;
+    %load/vec4 v0x57615308bf50_0;
+    %assign/vec4 v0x57615308c0f0_0, 0;
+T_1.0 ;
+    %jmp T_1;
+    .thread T_1, $push;
+    .scope S_0x576153071b50;
+T_2 ;
     %vpi_call 4 16 "$dumpfile", "VrDlatch.vcd" {0 0 0};
-    %vpi_call 4 17 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x6110cdc315d0 {0 0 0};
-    %vpi_call 4 18 "$monitor", "t=%0t D=%b G=%b | Q=%b", $time, v0x6110cdc4b550_0, v0x6110cdc4b620_0, v0x6110cdc4b6f0_0 {0 0 0};
+    %vpi_call 4 17 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x576153071b50 {0 0 0};
+    %vpi_call 4 18 "$monitor", "t=%0t D=%b G=%b | Q=%b", $time, v0x57615308c210_0, v0x57615308c2e0_0, v0x57615308c3b0_0 {0 0 0};
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0x6110cdc4b550_0, 0, 1;
+    %store/vec4 v0x57615308c210_0, 0, 1;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0x6110cdc4b620_0, 0, 1;
+    %store/vec4 v0x57615308c2e0_0, 0, 1;
     %delay 10, 0;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0x6110cdc4b550_0, 0, 1;
+    %store/vec4 v0x57615308c210_0, 0, 1;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0x6110cdc4b620_0, 0, 1;
+    %store/vec4 v0x57615308c2e0_0, 0, 1;
     %delay 10, 0;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0x6110cdc4b550_0, 0, 1;
+    %store/vec4 v0x57615308c210_0, 0, 1;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0x6110cdc4b620_0, 0, 1;
+    %store/vec4 v0x57615308c2e0_0, 0, 1;
     %delay 10, 0;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0x6110cdc4b550_0, 0, 1;
+    %store/vec4 v0x57615308c210_0, 0, 1;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0x6110cdc4b620_0, 0, 1;
-    %delay 10, 0;
-    %pushi/vec4 0, 0, 1;
-    %store/vec4 v0x6110cdc4b550_0, 0, 1;
-    %pushi/vec4 0, 0, 1;
-    %store/vec4 v0x6110cdc4b620_0, 0, 1;
-    %delay 10, 0;
-    %pushi/vec4 1, 0, 1;
-    %store/vec4 v0x6110cdc4b550_0, 0, 1;
-    %pushi/vec4 0, 0, 1;
-    %store/vec4 v0x6110cdc4b620_0, 0, 1;
+    %store/vec4 v0x57615308c2e0_0, 0, 1;
     %delay 10, 0;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0x6110cdc4b550_0, 0, 1;
-    %pushi/vec4 1, 0, 1;
-    %store/vec4 v0x6110cdc4b620_0, 0, 1;
+    %store/vec4 v0x57615308c210_0, 0, 1;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0x57615308c2e0_0, 0, 1;
     %delay 10, 0;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0x6110cdc4b550_0, 0, 1;
+    %store/vec4 v0x57615308c210_0, 0, 1;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0x57615308c2e0_0, 0, 1;
+    %delay 10, 0;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0x57615308c210_0, 0, 1;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0x6110cdc4b620_0, 0, 1;
+    %store/vec4 v0x57615308c2e0_0, 0, 1;
+    %delay 10, 0;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0x57615308c210_0, 0, 1;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0x57615308c2e0_0, 0, 1;
     %delay 10, 0;
     %vpi_call 4 29 "$finish" {0 0 0};
     %end;
-    .thread T_1;
+    .thread T_2;
 # The file index is used to find the file name in the following table.
 :file_names 6;
     "N/A";
     "<interactive>";
-    "/home/vinicarvalhop/SPI_MODULE/modules/FlipFlopD/rtl/FlipFlopD.v";
+    "/home/vinicarvalhop/SPI_MODULE/modules/VrDff/rtl/VrDff.v";
     "/home/vinicarvalhop/SPI_MODULE/modules/spi_master_system/rtl/spi_master_system.v";
     "/home/vinicarvalhop/SPI_MODULE/modules/VrDlatch/tb/VrDlatch.v";
     "/home/vinicarvalhop/SPI_MODULE/modules/VrDlatch/rtl/VrDlatch.v";
