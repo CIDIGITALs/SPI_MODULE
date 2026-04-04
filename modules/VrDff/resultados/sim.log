@@ -11,5 +11,5 @@ t=40 CLK=0 D=0 | Q=1
 t=45 CLK=1 D=0 | Q=0
 t=50 CLK=0 D=1 | Q=0
 t=55 CLK=1 D=1 | Q=1
-/home/vinicarvalhop/SPI_MODULE/modules/VrDff/tb/VrDff_tb.v:30: $finish called at 60 (1ns)
+C:\Users\joao9\GitHub\SPI_MODULE\modules\VrDff\tb\VrDff_tb.v:30: $finish called at 60 (1ns)
 t=60 CLK=0 D=1 | Q=1

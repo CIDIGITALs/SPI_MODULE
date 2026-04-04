@@ -21,5 +21,5 @@ t=90 CLK=0 CLR=0 D=1 | Q=1
 t=95 CLK=1 CLR=0 D=1 | Q=1
 t=100 CLK=0 CLR=0 D=0 | Q=1
 t=105 CLK=1 CLR=0 D=0 | Q=0
-/home/vinicarvalhop/SPI_MODULE/modules/VrDffC/tb/VrDffC_tb.v:38: $finish called at 110 (1ns)
+C:\Users\joao9\GitHub\SPI_MODULE\modules\VrDffC\tb\VrDffC_tb.v:38: $finish called at 110 (1ns)
 t=110 CLK=0 CLR=0 D=0 | Q=0
