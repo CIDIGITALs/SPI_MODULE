@@ -4,8 +4,8 @@ module spi_fsm (
     input wire rst_n, // Sinal de reset ativo baixo
     
     // Comandos
-    input wire cmd_valid, //sistema emite um sinal de que um comando está disponível
-    output reg cmd_ready, //fsm emite dizendo que está pronta para receber um comando
+    input wire cmd_valid, //sistema emite um sinal de que o sistema vai enviar um comando
+    output reg cmd_ready, //fsm emite dizendo que está pronta para receber o comando
 
     input wire rsp_ready, //sistema pronto para receber resposta
     output reg rsp_valid, //avisa que a resposta está pronta
