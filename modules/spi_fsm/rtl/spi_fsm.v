@@ -86,6 +86,13 @@ end
 // logica de saida, define os sinais de controle para cada estado
 always @(*) begin
 
+    cmd_ready = 1'b0;
+    load_data = 1'b0;
+    config_en = 1'b0;
+    cs_control = 1'b0;
+    start_transfer = 1'b0;
+    rsp_valid = 1'b0;
+    
     case (actual_state)
         IDLE : begin
             cmd_ready = 1'b1; //fsm pronta para receber um cmd
@@ -111,15 +118,7 @@ always @(*) begin
             rsp_valid = 1'b1; //avisa que a resposta está pronta
         end
     
-    default: 
-        begin
-            cmd_ready = 1'b0;
-            load_data = 1'b0;
-            config_en = 1'b0;
-            cs_control = 1'b0;
-            start_transfer = 1'b0;
-            rsp_valid = 1'b0;
-        end
+    default: ;
     endcase
 end 
 endmodule
