@@ -22,16 +22,16 @@ module spi_fsm (
 reg [2:0] actual_state, next_state;
 
 parameter [2:0]
-    IDLE = 3'b000, 
-    FETCH_CMD = 3'b001, 
-    CONFIGURE = 3'b010,
-    ASSERT_CS = 3'b011,
-    TRANSFER = 3'b100,
-    DEASSERT_CS = 3'b101,
-    DONE = 3'b110; 
+    IDLE = 3'b000, // Estado de repouso
+    FETCH_CMD = 3'b001, // SPI_recebeu um comando
+    CONFIGURE = 3'b010, // Configurar o divisor do Clock e o CPOL/CPHA
+    ASSERT_CS = 3'b011, // Habilitar o pino do CS
+    TRANSFER = 3'b100, // Indicar que está havendo comunicação com os escravos
+    DEASSERT_CS = 3'b101, // Desabilita o CS
+    DONE = 3'b110; // Indica o final da comunicação(rsp_valid)
 
 // logica de mudança de estado a cada ciclo de clock
-always @(posedge clk or negedge rst_n) begin
+always @(posedge clk) begin
     if (!rst_n) // Se o reset estiver em nivel baixo, volta para o estado IDLE
         actual_state <= IDLE;
     else
@@ -79,19 +79,12 @@ always @(*) begin
             end
         end
         
-        default : next_state = IDLE;    
+        default : next_state = IDLE; // Verificar depois se deve ser next_state = IDLE;
     endcase
 end
 
 // logica de saida, define os sinais de controle para cada estado
 always @(*) begin
-
-    cmd_ready = 0;
-    rsp_valid = 0;
-    start_transfer = 0;
-    load_data = 0;
-    cs_control = 0;
-    config_en = 0;
 
     case (actual_state)
         IDLE : begin
@@ -118,8 +111,15 @@ always @(*) begin
             rsp_valid = 1'b1; //avisa que a resposta está pronta
         end
     
-    default: ;
-
+    default: 
+        begin
+            cmd_ready = 1'b0;
+            load_data = 1'b0;
+            config_en = 1'b0;
+            cs_control = 1'b0;
+            start_transfer = 1'b0;
+            rsp_valid = 1'b0;
+        end
     endcase
 end 
 endmodule
