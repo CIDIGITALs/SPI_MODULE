@@ -11,7 +11,7 @@ module spi_fsm (
     output reg rsp_valid, //avisa que a resposta está pronta
     
     // Sinais de controle interno
-    input wire transfer_done, //shift register informa que a transferência foi concluída
+    input wire transfer_done, /// bit_counter informa que n_bits foram transferidos
     output reg start_transfer, //avisa o shift register para iniciar a transferência
     output reg load_data, //avisa o shift register para carregar os dados a serem transferidos
     output reg cs_control, //controle do chip select (CS)
