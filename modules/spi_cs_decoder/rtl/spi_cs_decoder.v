@@ -12,8 +12,6 @@ module spi_cs_decoder #(
     output reg  [N_SLAVES-1:0]            cs_out      // Pinos de Chip Select (Ativos em BAIXO)
 );
 
-    integer i;
-
     // Bloco puramente combinatório (Roteamento instantâneo)
     always @(*) begin
         // 1. Valor padrão seguro: Todos os CS desativados (Nível ALTO)
@@ -24,7 +22,7 @@ module spi_cs_decoder #(
             
             if (daisy_mode) begin
                 // --- MODO DAISY CHAIN ---
-                // No modo Daisy Chain, deve haver um único sinal de chip select ativo[cite: 18].
+                // No modo Daisy Chain, deve haver um único sinal de chip select ativo.
                 // Padronizamos o uso do pino cs_out[0] para habilitar toda a cascata.
                 // Ignoramos o 'slave_id' recebido, pois todos os chips compartilham o mesmo fio CS.
                 cs_out[0] = 1'b0;
@@ -32,7 +30,7 @@ module spi_cs_decoder #(
             
             else begin
                 // --- MODO MULTIPONTO ---
-                // Não é permitido ativar mais de um escravo simultaneamente[cite: 30].
+                // Não é permitido ativar mais de um escravo simultaneamente.
                 // Decodificação One-Hot clássica baseada no slave_id.
                 // Apenas o pino correspondente vai para 0.
                 cs_out[slave_id] = 1'b0;

@@ -1,0 +1,16 @@
+VCD info: dumpfile spi_master.vcd opened for output.
+--------------------------------------------------
+[TESTE 1] Iniciando Transacao MULTIPONTO normal
+Mestre envia 16'h1234 para o Escravo 1. Escravo 1 deve responder 16'hBBBB
+Resposta lida do Escravo 1: bbbb
+--------------------------------------------------
+[TESTE 2] Iniciando Transacao DAISY CHAIN (Cascata)
+Topologia alterada. Mestre -> Slave 0 -> Slave 1 -> Mestre
+Mestre vai enviar DUAS palavras (16'hDEAD e 16'hBEEF) segurando o CS.
+Transacao 1 finalizada. CS ainda esta BAIXO.
+Transacao 2 finalizada. CS subiu.
+Verificando registros finais dos Escravos:
+Slave 0 contem: 7dde (Esperado: BEEF)
+Slave 1 contem: dead (Esperado: DEAD)
+--------------------------------------------------
+C:\Users\vinip\Documents\SPI_MODULE\modules\spi_master_system\tb\spi_master_system_tb.v:176: $finish called at 8630000 (1ps)
