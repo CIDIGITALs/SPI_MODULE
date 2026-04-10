@@ -1,134 +1,79 @@
 module spi_fsm (
-    input wire clk,           // Relógio principal do sistema
+    input wire clk,           // Relógio principal do sistema (50MHz)
     input wire rst_n,         // Reset síncrono ativo baixo
     
     // Interface com o Sistema Externo
     input wire cmd_valid,     // Sistema avisa que enviou um comando
     output reg cmd_ready,     // FSM avisa que está pronta
-    input wire hold_cs,       // NOVO: Bit extraído do cmd_data[37] (1 = Daisy Chain/Cascata)
+    input wire hold_cs,       // Vem do cmd_data[37] (1 = Daisy Chain, mantém CS baixo)
     input wire rsp_ready,     // Sistema avisa que pegou a resposta
     output reg rsp_valid,     // FSM avisa que a resposta está pronta
     
-    // Interface com os Módulos Internos (Datapath)
+    // Interface com os Módulos Internos
     input wire transfer_done, // Vem do spi_counter (avisa que os bits acabaram)
-    output reg load_data,     // Vai para o Shift Reg, Counter e Divisor (estado CONFIGURE)
-    output reg config_en,     // Vai para o Divisor para resetar o relógio SPI
-    output reg cs_enable,     // Vai para o spi_cs_decoder (1 = Acorda escravo)
-    output reg start_transfer // Vai para o Divisor de Clock e Datapath (enable)
+    output reg load_data,     // Sinal Mestre: Carrega Datapath, Contador e Regs do Top-Level
+    output reg cs_enable,     // Vai para o spi_cs_decoder (1 = Autoriza rotear o CS)
+    output reg start_transfer // Vai para o spi_clk_gen (liga o motor gerador de ticks)
 );
 
     reg [2:0] actual_state, next_state;
 
     parameter [2:0]
-        IDLE        = 3'b000, // Repouso
-        FETCH_CMD   = 3'b001, // Comando recebido
-        CONFIGURE   = 3'b010, // Carrega os registradores e o contador
-        ASSERT_CS   = 3'b011, // Ativa o Chip Select
-        TRANSFER    = 3'b100, // Comunicação SPI rolando
-        DEASSERT_CS = 3'b101, // Desativa o Chip Select
-        DONE        = 3'b110; // Operação concluída
+        IDLE        = 3'b000, 
+        FETCH_CMD   = 3'b001, 
+        CONFIGURE   = 3'b010, 
+        ASSERT_CS   = 3'b011, 
+        TRANSFER    = 3'b100, 
+        DEASSERT_CS = 3'b101, 
+        DONE        = 3'b110; 
 
-    // 1. LÓGICA SEQUENCIAL (Atualização de Estado com Reset Síncrono)
+    // Lógica Sequencial (Reset Síncrono)
     always @(posedge clk) begin
-        if (!rst_n) 
-            actual_state <= IDLE;
-        else 
-            actual_state <= next_state;
+        if (!rst_n) actual_state <= IDLE;
+        else        actual_state <= next_state;
     end
 
-    // 2. LÓGICA COMBINATÓRIA (Definição do Próximo Estado)
+    // Lógica Combinatória (Próximo Estado)
     always @(*) begin
-        next_state = actual_state; // Por padrão, mantém o estado
+        next_state = actual_state; 
         
         case (actual_state)
-            IDLE : begin
-                if (cmd_valid && cmd_ready) 
-                    next_state = FETCH_CMD;
-            end
-            
-            FETCH_CMD : begin
-                next_state = CONFIGURE;
-            end
-            
-            CONFIGURE : begin
-                next_state = ASSERT_CS;
-            end
-            
-            ASSERT_CS : begin
-                next_state = TRANSFER;
-            end
-            
+            IDLE :        if (cmd_valid && cmd_ready) next_state = FETCH_CMD;
+            FETCH_CMD :   next_state = CONFIGURE;
+            CONFIGURE :   next_state = ASSERT_CS;
+            ASSERT_CS :   next_state = TRANSFER;
             TRANSFER : begin
                 if (transfer_done) begin
-                    // Lógica Daisy Chain: Se hold_cs for 1, a comunicação de uma palavra acabou,
-                    // mas queremos enviar outra logo em seguida sem subir o pino CS!
-                    if (hold_cs)
-                        next_state = DONE; 
-                    else
-                        next_state = DEASSERT_CS; // Transação normal, vai desligar o CS
+                    if (hold_cs) next_state = DONE; 
+                    else         next_state = DEASSERT_CS; 
                 end
             end
-            
-            DEASSERT_CS : begin
-                next_state = DONE;
-            end
-            
-            DONE : begin
-                if (rsp_ready) 
-                    next_state = IDLE;
-            end
-            
-            default : next_state = IDLE;
+            DEASSERT_CS : next_state = DONE;
+            DONE :        if (rsp_ready) next_state = IDLE;
+            default :     next_state = IDLE;
         endcase
     end
 
-    // 3. LÓGICA DE SAÍDA (Sinais de Controle sem Latches)
+    // Lógica de Saída (Sinais de Controle)
     always @(*) begin
-        
-        // --- VALORES PADRÃO (Evita a criação de memória indesejada) ---
+        // Valores Padrão
         cmd_ready      = 1'b0;
         rsp_valid      = 1'b0;
         load_data      = 1'b0;
-        config_en      = 1'b0;
         start_transfer = 1'b0;
+        cs_enable      = hold_cs; // Se for Daisy Chain, mantém a porta aberta no IDLE
         
-        // O cs_enable depende se estamos segurando o CS por causa do Daisy Chain.
-        // Se hold_cs for 1, o CS deve continuar ativo mesmo no IDLE esperando a próxima palavra.
-        cs_enable      = hold_cs; 
-
-        // --- SOBRESCRITA ESPECÍFICA DE CADA ESTADO ---
         case (actual_state)
-            
-            IDLE : begin
-                cmd_ready = 1'b1; 
-            end
-            
-            FETCH_CMD : begin
-                // Nada a sobrescrever (cmd_ready já desceu pra 0 no topo)
-            end
-            
-            CONFIGURE : begin
-                load_data = 1'b1; 
-                config_en = 1'b1; 
-            end
-            
-            ASSERT_CS : begin
-                cs_enable = 1'b1; // Força a ativação do CS independente do hold_cs
-            end
-            
+            IDLE :        cmd_ready = 1'b1; 
+            FETCH_CMD :   ; // Mantém padrões
+            CONFIGURE :   load_data = 1'b1; 
+            ASSERT_CS :   cs_enable = 1'b1; 
             TRANSFER : begin
-                cs_enable      = 1'b1; // Mantém ativo
-                start_transfer = 1'b1; // Habilita o pulso do clk_div
+                cs_enable      = 1'b1; 
+                start_transfer = 1'b1; 
             end
-            
-            DEASSERT_CS : begin
-                cs_enable = 1'b0; // Força a desativação do CS
-            end
-            
-            DONE : begin
-                rsp_valid = 1'b1; // Avisa o sistema que pode ler a resposta
-            end
-            
+            DEASSERT_CS : cs_enable = 1'b0; 
+            DONE :        rsp_valid = 1'b1; 
         endcase
     end 
 endmodule
