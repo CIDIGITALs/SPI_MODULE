@@ -27,6 +27,7 @@ module spi_shift_register #(
             parallel_out <= {WIDTH{1'b0}};
         end
         else if (load) begin
+            parallel_out <= {WIDTH{1'b0}}; // Limpa a saída paralela para receber nova transmissão
             tx_reg <= parallel_in; // Prepara o dado a ser enviado
         end
         else begin
