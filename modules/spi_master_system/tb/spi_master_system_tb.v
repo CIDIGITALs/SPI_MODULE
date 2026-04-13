@@ -47,11 +47,11 @@ module tb_spi_master_system;
     initial clk = 0;
     always #10 clk = ~clk; // Período de 20ns
 
+// =========================================================================
+    // 3. CRIAÇÃO DOS "ESCRAVOS FALSOS" (Mock Slaves - À prova de Race Condition)
     // =========================================================================
-    // 3. CRIAÇÃO DOS "ESCRAVOS FALSOS" (Mock Slaves usando Registradores)
-    // =========================================================================
-    reg [15:0] slave0_reg = 16'hAAAA; // Escravo 0 começa com AAAA
-    reg [15:0] slave1_reg = 16'hBBBB; // Escravo 1 começa com BBBB
+    reg [15:0] slave0_reg = 16'hAAAA; 
+    reg [15:0] slave1_reg = 16'hBBBB; 
     
     // Fios físicos dos escravos
     wire miso_s0, miso_s1;
@@ -61,30 +61,43 @@ module tb_spi_master_system;
     reg topologia_daisy = 0; 
 
     // Roteamento MOSI
-    // No Daisy Chain, o S1 recebe o que sai (MISO) do S0. No Multiponto, recebe do Mestre.
     assign mosi_s0 = mosi;
     assign mosi_s1 = (topologia_daisy) ? miso_s0 : mosi;
 
-    // Roteamento MISO para o Mestre
-    // No Daisy Chain, o Mestre lê do S1. No Multiponto, lê de quem estiver com o CS baixo.
+    // Roteamento MISO
     assign miso = (topologia_daisy) ? miso_s1 : (
                     (!cs[0]) ? miso_s0 :
-                    (!cs[1]) ? miso_s1 : 1'b1 // Pull-up se ninguém estiver ativo
+                    (!cs[1]) ? miso_s1 : 1'b1
                   );
 
-    // O bit de saída de cada escravo (MSB)
+    // O bit de saída (MISO) aponta sempre para o MSB atual do registrador
     assign miso_s0 = (!cs[0]) ? slave0_reg[15] : 1'b1;
     assign miso_s1 = (!cs[1] || (topologia_daisy && !cs[0])) ? slave1_reg[15] : 1'b1;
 
-    // Comportamento dinâmico dos Escravos (Operando em SPI Mode 0)
-    // Mode 0: Desloca o bit na borda de descida do SCLK para evitar corrida
-    always @(negedge sclk) begin
-        if (!cs[0]) slave0_reg <= {slave0_reg[14:0], mosi_s0};
-    end
-    always @(negedge sclk) begin
-        // No modo Daisy, o S1 responde ao CS[0] também!
+    // --- A MÁGICA DA CORREÇÃO: Separar Amostragem e Deslocamento ---
+    
+    // Registradores temporários para segurar a leitura do fio
+    reg mosi_capturado_s0;
+    reg mosi_capturado_s1;
+
+    // 1. AMOSTRAGEM (Leitura segura): 
+    // Ocorre na borda de SUBIDA, longe do momento em que o mestre altera os fios.
+    always @(posedge sclk) begin
+        if (!cs[0]) 
+            mosi_capturado_s0 <= mosi_s0;
+            
         if (!cs[1] || (topologia_daisy && !cs[0])) 
-            slave1_reg <= {slave1_reg[14:0], mosi_s1};
+            mosi_capturado_s1 <= mosi_s1;
+    end
+
+    // 2. DESLOCAMENTO (Escrita): 
+    // Ocorre na borda de DESCIDA, empurrando para dentro o bit que foi lido com segurança.
+    always @(negedge sclk) begin
+        if (!cs[0]) 
+            slave0_reg <= {slave0_reg[14:0], mosi_capturado_s0};
+            
+        if (!cs[1] || (topologia_daisy && !cs[0])) 
+            slave1_reg <= {slave1_reg[14:0], mosi_capturado_s1};
     end
 
     // =========================================================================
