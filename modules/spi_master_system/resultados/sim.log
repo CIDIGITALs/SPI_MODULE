@@ -10,7 +10,7 @@ Mestre vai enviar DUAS palavras (16'hDEAD e 16'hBEEF) segurando o CS.
 Transacao 1 finalizada. CS ainda esta BAIXO.
 Transacao 2 finalizada. CS subiu.
 Verificando registros finais dos Escravos:
-Slave 0 contem: 7dde (Esperado: BEEF)
+Slave 0 contem: beef (Esperado: BEEF)
 Slave 1 contem: dead (Esperado: DEAD)
 --------------------------------------------------
-c:\Users\joao9\GitHub\SPI_MODULE\modules\spi_master_system\tb\spi_master_system_tb.v:176: $finish called at 8630000 (1ps)
+/home/vinicarvalho/Documents/SPI_MODULE/modules/spi_master_system/tb/spi_master_system_tb.v:189: $finish called at 8630000 (1ps)

@@ -50,27 +50,34 @@ module spi_master_system #(
     wire trail_tick;
     wire lead_tick; // Gerado pelo módulo, mas não usado diretamente pelos registradores
 
+// =========================================================================
+    // 3. REGISTRADOR DE CONFIGURAÇÃO (Usando o seu Módulo Genérico PIPO)
     // =========================================================================
-    // 3. REGISTRADORES DE CONFIGURAÇÃO (Salvos no momento do load_data)
-    // =========================================================================
-    reg reg_cpol;
-    reg reg_cpha;
-    reg [7:0] reg_clk_div;
+    
+    // Fios para extrair as saídas do registrador
+    wire reg_cpol;
+    wire reg_cpha;
+    wire [7:0] reg_clk_div;
+    
+    // Barramento temporário de 10 bits juntando a entrada e a saída
+    wire [9:0] config_data_in  = {ext_cpol, ext_cpha, ext_clk_div};
+    wire [9:0] config_data_out;
 
-    always @(posedge clk) begin
-        if (!reset) begin
-            reg_cpol    <= 1'b0;
-            reg_cpha    <= 1'b0;
-            reg_clk_div <= 8'd0;
-        end
-        else if (load_data_wire) begin
-            // Copia as configurações do barramento para uso contínuo do Divisor
-            reg_cpol    <= ext_cpol;
-            reg_cpha    <= ext_cpha;
-            reg_clk_div <= ext_clk_div;
-        end
-    end
+    // Desempacotando a saída do registrador para entregar ao Divisor de Clock
+    assign reg_cpol    = config_data_out[9];
+    assign reg_cpha    = config_data_out[8];
+    assign reg_clk_div = config_data_out[7:0];
 
+    // Instância do SEU módulo!
+    spi_config_register #(
+        .N(10)
+    ) config_reg_inst (
+        .clk(clk),
+        .reset(reset),
+        .load(load_data_wire),      // O mesmo pulso da FSM que carrega os dados
+        .data_in(config_data_in),   // O que vem de fora
+        .data_out(config_data_out)  // O que vai ficar salvo e seguro para o Divisor
+    );
     // =========================================================================
     // 4. INSTANCIAÇÃO DOS SUBMÓDULOS
     // =========================================================================
