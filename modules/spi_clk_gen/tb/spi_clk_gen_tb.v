@@ -19,7 +19,7 @@ module tb_spi_clk;
     );
 
     initial clk = 0;
-    always #10 clk = ~clk; // 50 MHz
+    always #10 clk = ~clk; 
 
     initial begin
         $dumpfile("tb_spi_clk.vcd");
@@ -30,7 +30,7 @@ module tb_spi_clk;
         
         $display("Testando CPOL=0, CPHA=0");
         enable = 1;
-        #400; // Deixa o relógio bater algumas vezes
+        #400; 
         
         enable = 0;
         #100;
