@@ -1,16 +1,31 @@
 VCD info: dumpfile spi_master.vcd opened for output.
 --------------------------------------------------
-[TESTE 1] Iniciando Transacao MULTIPONTO normal
-Mestre envia 16'h1234 para o Escravo 1. Escravo 1 deve responder 16'hBBBB
-Resposta lida do Escravo 1: bbbb
+[TESTE 1] Transacao MULTIPONTO - Escravo 1
+   [PASS] Resposta correta do Escravo. Recebido: bbbb
+
+[TESTE 2] Troca rapida de Escravo - Escravo 2
+   [PASS] Resposta correta do Escravo. Recebido: cccc
 --------------------------------------------------
-[TESTE 2] Iniciando Transacao DAISY CHAIN (Cascata)
-Topologia alterada. Mestre -> Slave 0 -> Slave 1 -> Mestre
-Mestre vai enviar DUAS palavras (16'hDEAD e 16'hBEEF) segurando o CS.
-Transacao 1 finalizada. CS ainda esta BAIXO.
-Transacao 2 finalizada. CS subiu.
-Verificando registros finais dos Escravos:
-Slave 0 contem: beef (Esperado: BEEF)
-Slave 1 contem: dead (Esperado: DEAD)
+[TESTE 3] Variacao de CPOL e CPHA
+Enviando comando com CPOL=1 e CPHA=1 para o Escravo 3...
+   [INFO] Resposta ignorada. Valor circulado recebido: bbbb
 --------------------------------------------------
-/home/vinicarvalho/Documents/SPI_MODULE/modules/spi_master_system/tb/spi_master_system_tb.v:189: $finish called at 8630000 (1ps)
+[TESTE 4] Caso de Borda - Comando Invasor (Stress Test)
+Enviando comando longo, e simulando host ansioso...
+   -> Injetando ruido no barramento e forcando cmd_valid = 1...
+   [FAIL] A FSM quebrou com a invasao. Recebido: 555X
+--------------------------------------------------
+[TESTE 5] Iniciando Transacao DAISY CHAIN (4 Escravos)
+Topologia alterada. Mestre -> S0 -> S1 -> S2 -> S3 -> Mestre
+   [INFO] Resposta ignorada. Valor circulado recebido: f0f0
+   [INFO] Resposta ignorada. Valor circulado recebido: 4321
+   [INFO] Resposta ignorada. Valor circulado recebido: 1234
+   [INFO] Resposta ignorada. Valor circulado recebido: 1111
+
+Verificando registros finais do Daisy Chain:
+Slave 0 contem: 4444 (Esperado: 4444)
+Slave 1 contem: 3333 (Esperado: 3333)
+Slave 2 contem: 2222 (Esperado: 2222)
+Slave 3 contem: 1111 (Esperado: 1111)
+--------------------------------------------------
+/home/vinicarvalho/Documents/SPI_MODULE/modules/spi_master_system/tb/spi_master_system_tb.v:234: $finish called at 24850000 (1ps)

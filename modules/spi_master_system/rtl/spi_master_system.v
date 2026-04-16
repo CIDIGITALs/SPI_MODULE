@@ -1,10 +1,12 @@
+// Junção de todos os modulos para formar o sistema completo de SPI Master
+
 module spi_master_system #(
     parameter N_SLAVES = 4,
     parameter MAX_BITS = 16
 )
 (
     input wire clk,
-    input wire reset, // Assumindo que este é o reset ativo baixo (rst_n) do seu sistema
+    input wire reset,
 
     // Comandos
     input  wire cmd_valid,
@@ -23,21 +25,17 @@ module spi_master_system #(
     output wire [N_SLAVES-1:0] cs
 );
 
-    // =========================================================================
-    // 1. FATIAMENTO DO BARRAMENTO (Extraindo a configuração do cmd_data)
-    // =========================================================================
+    //Pica o barramento de comando para os sinais individuais
     wire [15:0] ext_data_in  = cmd_data[15:0];
     wire [7:0]  ext_n_bits   = cmd_data[23:16];
     wire [7:0]  ext_clk_div  = cmd_data[31:24];
     wire        ext_cpha     = cmd_data[32];
     wire        ext_cpol     = cmd_data[33];
-    wire [1:0]  ext_slave_id = cmd_data[35:34]; // Assumindo N_SLAVES = 4
+    wire [1:0]  ext_slave_id = cmd_data[35:34];
     wire        ext_daisy    = cmd_data[36];
     wire        ext_hold_cs  = cmd_data[37];
 
-    // =========================================================================
-    // 2. FIOS DE INTERCONEXÃO (Roteamento entre os módulos)
-    // =========================================================================
+ 
     // Fios da FSM
     wire load_data_wire;
     wire start_transfer_wire;
@@ -48,41 +46,38 @@ module spi_master_system #(
     wire sample_tick;
     wire shift_tick;
     wire trail_tick;
-    wire lead_tick; // Gerado pelo módulo, mas não usado diretamente pelos registradores
+    wire lead_tick; 
 
-// =========================================================================
-    // 3. REGISTRADOR DE CONFIGURAÇÃO (Usando o seu Módulo Genérico PIPO)
-    // =========================================================================
-    
+    //Registradores de configuração estilo PIPO
+    //Esses registradores protegem os valores de configuração e os mantêm estáveis durante a transferência, mesmo que o barramento de comando mude.
+    // A FSM vai carregar esses registradores no início de cada transferência, garantindo que o Divisor de Clock e os outros módulos tenham dados consistentes
+    // para trabalhar.
+
     // Fios para extrair as saídas do registrador
     wire reg_cpol;
     wire reg_cpha;
     wire [7:0] reg_clk_div;
     
-    // Barramento temporário de 10 bits juntando a entrada e a saída
+    // Concatenando os sinais de configuração para entrar no registrador de uma só vez
     wire [9:0] config_data_in  = {ext_cpol, ext_cpha, ext_clk_div};
     wire [9:0] config_data_out;
 
-    // Desempacotando a saída do registrador para entregar ao Divisor de Clock
     assign reg_cpol    = config_data_out[9];
     assign reg_cpha    = config_data_out[8];
     assign reg_clk_div = config_data_out[7:0];
 
-    // Instância do SEU módulo!
+    // Instanciação do Registrador de Configuração
     spi_config_register #(
         .N(10)
     ) config_reg_inst (
         .clk(clk),
         .reset(reset),
         .load(load_data_wire),      // O mesmo pulso da FSM que carrega os dados
-        .data_in(config_data_in),   // O que vem de fora
-        .data_out(config_data_out)  // O que vai ficar salvo e seguro para o Divisor
+        .data_in(config_data_in),   // O que vem de fora (clk_div, cpol, cpha)
+        .data_out(config_data_out)  // O dado que vai para o Divisor de Clock
     );
-    // =========================================================================
-    // 4. INSTANCIAÇÃO DOS SUBMÓDULOS
-    // =========================================================================
-
-    // O Cérebro
+    
+    //FSM
     spi_fsm fsm_inst (
         .clk(clk),
         .rst_n(reset),
@@ -97,24 +92,24 @@ module spi_master_system #(
         .start_transfer(start_transfer_wire)
     );
 
-    // O Maestro do Tempo
+    // Divisor de Clock
     spi_clk_gen #(
         .DIV_WIDTH(8)
     ) clk_gen_inst (
         .clk(clk),
         .clear_n(reset),
         .enable(start_transfer_wire),
-        .cpol(reg_cpol),             // Usa o valor salvo no registrador
-        .cpha(reg_cpha),             // Usa o valor salvo no registrador
-        .clk_div(reg_clk_div),       // Usa o valor salvo no registrador
-        .sclk(sclk),                 // Pino físico
+        .cpol(reg_cpol), //Pelo assign acima reg_cpol, reg_cpha e reg_clk_div vem diretamente do registrador de configuração            
+        .cpha(reg_cpha),             
+        .clk_div(reg_clk_div),       
+        .sclk(sclk),                
         .lead_edge_pulse(lead_tick), 
         .trail_edge_pulse(trail_tick),
         .sample_edge(sample_tick),
         .shift_edge(shift_tick)
     );
 
-    // Os Músculos (Datapath)
+    //registro de deslocamento
     spi_shift_register #(
         .WIDTH(MAX_BITS),
         .MSB_FIRST(1)
@@ -124,32 +119,32 @@ module spi_master_system #(
         .load(load_data_wire),
         .shift_edge(shift_tick),
         .sample_edge(sample_tick),
-        .serial_in(miso),            // Pino físico
-        .parallel_in(ext_data_in),   // Vem direto do barramento
-        .parallel_out(rsp_data),     // Vai para a saída do sistema
-        .serial_out(mosi)            // Pino físico
+        .serial_in(miso),            
+        .parallel_in(ext_data_in),   
+        .parallel_out(rsp_data),     
+        .serial_out(mosi)            
     );
 
-    // O Cronômetro
+    // O Counter de bits
     spi_counter #(
-        .CNT_WIDTH(5) // Para 16 bits (conta até 31)
+        .CNT_WIDTH(5) 
     ) counter_inst (
         .clk(clk),
         .rst_n(reset),
         .load_data(load_data_wire),
         .trail_edge(trail_tick),
-        .n_bits(ext_n_bits[4:0]),    // Pegamos só os 5 bits necessários
+        .n_bits(ext_n_bits[4:0]),    
         .transfer_done(transfer_done_wire)
     );
 
-    // A Chave Seletora
+    // O decodificador de Chip Select
     spi_cs_decoder #(
         .N_SLAVES(N_SLAVES)
     ) cs_decoder_inst (
         .cs_enable(cs_enable_wire),
         .daisy_mode(ext_daisy),
         .slave_id(ext_slave_id),
-        .cs_out(cs)                  // Pinos físicos
+        .cs_out(cs)                  
     );
 
 endmodule

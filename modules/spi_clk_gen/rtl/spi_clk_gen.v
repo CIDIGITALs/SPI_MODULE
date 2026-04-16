@@ -16,7 +16,7 @@ module spi_clk_gen #(
 );
 
     reg [DIV_WIDTH-1:0] div_cnt; // Registrador de contagem para gerar o clock
-    wire [DIV_WIDTH-1:0] div_value
+    wire [DIV_WIDTH-1:0] div_value; // Valor da divisão efetiva, considerando o caso de clk_div = 0
     wire toggle_now;
 
     //Operador ternario "se clk_div for zero, use 1, caso contrário use clk_div"
