@@ -33,7 +33,7 @@ module tb_spi_register;
         
         load = 1; #20 load = 0;
 
-        repeat (8) begin
+        repeat (8) begin //loop para simular 8 ciclos de envio/amostragem, suficiente para transmitir os 8 bits
             #40 sample_edge = 1; 
             serial_in = ~serial_in; //flipa a entrada serial para testar a recepção
             #20 sample_edge = 0;
