@@ -1,5 +1,4 @@
 module spi_counter #(
-    // Se o MAX_BITS do seu projeto é 16, 5 bits são suficientes (conta até 31)
     parameter CNT_WIDTH = 5 
 )(
     input  wire                 clk,
@@ -7,35 +6,35 @@ module spi_counter #(
     
     // Controle
     input  wire                 load_data,  // FSM avisa (estado CONFIGURE)
-    input  wire                 trail_edge, // Divisor avisa que o ciclo do bit acabou
+    input  wire                 trail_edge, // trail_edge que vem do dividor de clock sempre avisa que uma transferencia e recebimento de um bit foi finalizada (estado TRANSFER)
     input  wire [CNT_WIDTH-1:0] n_bits,     // Quantidade de bits (vem do cmd_data)
     
     // Saída
-    output reg                  transfer_done // Flag para a FSM (estado TRANSFER)
+    output reg                  transfer_done // Avisa a FSM que a transferência de todos os bits foi concluída (estado TRANSFER)
 );
 
-    reg [CNT_WIDTH-1:0] bit_count;
+    reg [CNT_WIDTH-1:0] bit_count; //registrador de contagem de bits
 
-    always @(posedge clk) begin
+    always @(posedge clk) begin //reset síncrono
         if (!rst_n) begin
             bit_count     <= {CNT_WIDTH{1'b0}};
             transfer_done <= 1'b0;
         end 
         else begin
-            // 1. A FSM manda carregar o número de bits
+            // Fsm manda carregar os bits
             if (load_data) begin
                 bit_count     <= n_bits;
-                transfer_done <= 1'b0; // Abaixa a flag de concluído
+                transfer_done <= 1'b0; // Força a flag para estado baixo
             end 
             
-            // 2. O Divisor de Clock avisa que um bit terminou de trafegar
+            // O Divisor de Clock avisa que um bit terminou de trafegar
             else if (trail_edge) begin
                 
-                // Se ainda temos bits para contar...
+                // Se bit count for maior que 0, significa que ainda temos bits para transferir
                 if (bit_count > 0) begin
                     
                     // Se este for exatamente o ÚLTIMO bit sendo finalizado, 
-                    // levantamos a flag para a FSM avançar no próximo ciclo de clk
+                    // FSM avançar no próximo ciclo de clk, o ultimo bit pois a contagem é de n_bits para 0, ou seja, quando bit_count for 1, o próximo bit a ser transferido é o último
                     if (bit_count == 1) begin
                         transfer_done <= 1'b1; 
                     end
