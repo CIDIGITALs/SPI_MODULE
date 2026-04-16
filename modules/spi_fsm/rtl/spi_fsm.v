@@ -1,24 +1,24 @@
 module spi_fsm (
-    input wire clk,           // Relógio principal do sistema (50MHz)
-    input wire rst_n,         // Reset síncrono ativo baixo
+    input wire clk,           // clk do sistema 
+    input wire rst_n,         // reset sincrono ativo baixo
     
-    // Interface com o Sistema Externo
-    input wire cmd_valid,     // Sistema avisa que enviou um comando
-    output reg cmd_ready,     // FSM avisa que está pronta
-    input wire hold_cs,       // Vem do cmd_data[37] (1 = Daisy Chain, mantém CS baixo)
+    // Sinais de controle externos ao modulo
+    input wire cmd_valid,     // Host informa a chegada de um novo comando
+    output reg cmd_ready,     // FSM avis que o modulo está pronto para receber o comando
+    input wire hold_cs,       // Sinal do host que indica se o CS deve permanecer ativo após a transferência (Daisy Chain)
     input wire rsp_ready,     // Sistema avisa que pegou a resposta
     output reg rsp_valid,     // FSM avisa que a resposta está pronta
     
-    // Interface com os Módulos Internos
-    input wire transfer_done, // Vem do spi_counter (avisa que os bits acabaram)
-    output reg load_data,     // Sinal Mestre: Carrega Datapath, Contador e Regs do Top-Level
-    output reg cs_enable,     // Vai para o spi_cs_decoder (1 = Autoriza rotear o CS)
-    output reg start_transfer // Vai para o spi_clk_gen (liga o motor gerador de ticks)
+    // Sinais internos ao modulo
+    input wire transfer_done, // Sinal do Contador de Bits que indica o fim da transferência
+    output reg load_data,     // Vai para o registrador de configuração, contador, e shift register
+    output reg cs_enable,     // Vai para o spi_cs_decoder, sendo esse o sinal de enable do decodificador
+    output reg start_transfer // Liga o gerador de clock começar a gerar os pulos de shift(envio de dados) e sample(leitura de dados) e sclk (clock dos escravos)
 );
 
-    reg [2:0] actual_state, next_state;
+    reg [2:0] actual_state, next_state; // registros para o estado atual e próximo estado da FSM
 
-    parameter [2:0]
+    parameter [2:0] //alias para os estados da FSM
         IDLE        = 3'b000, 
         FETCH_CMD   = 3'b001, 
         CONFIGURE   = 3'b010, 
@@ -27,13 +27,13 @@ module spi_fsm (
         DEASSERT_CS = 3'b101, 
         DONE        = 3'b110; 
 
-    // Lógica Sequencial (Reset Síncrono)
+    // Lógica do reset sincrono e transicao de estados
     always @(posedge clk) begin
         if (!rst_n) actual_state <= IDLE;
         else        actual_state <= next_state;
     end
 
-    // Lógica Combinatória (Próximo Estado)
+    // Logica de atualização do próximo estado da FSM
     always @(*) begin
         next_state = actual_state; 
         
@@ -44,7 +44,7 @@ module spi_fsm (
             ASSERT_CS :   next_state = TRANSFER;
             TRANSFER : begin
                 if (transfer_done) begin
-                    if (hold_cs) next_state = DONE; 
+                    if (hold_cs) next_state = DONE; // Se hold_cs for 1, vai direto para DONE, mantendo o CS ativo
                     else         next_state = DEASSERT_CS; 
                 end
             end
@@ -54,26 +54,26 @@ module spi_fsm (
         endcase
     end
 
-    // Lógica de Saída (Sinais de Controle)
+    // Lógica de Saída dos sinais relativo a cada estado da FSM
     always @(*) begin
-        // Valores Padrão
+
         cmd_ready      = 1'b0;
         rsp_valid      = 1'b0;
         load_data      = 1'b0;
         start_transfer = 1'b0;
-        cs_enable      = hold_cs; // Se for Daisy Chain, mantém a porta aberta no IDLE
+        cs_enable      = hold_cs; 
         
         case (actual_state)
             IDLE :        cmd_ready = 1'b1; 
             FETCH_CMD :   ; // Mantém padrões
-            CONFIGURE :   load_data = 1'b1; 
-            ASSERT_CS :   cs_enable = 1'b1; 
+            CONFIGURE :   load_data = 1'b1; // Carrega os dados de configuração no registrador, contador e shift register
+            ASSERT_CS :   cs_enable = 1'b1; //Levanta o CS para iniciar a comunicação com os escravos
             TRANSFER : begin
-                cs_enable      = 1'b1; 
-                start_transfer = 1'b1; 
+                cs_enable      = 1'b1; // Garante que o CS permaneça ativo durante toda a transferência
+                start_transfer = 1'b1; // Liga o gerador de clock para iniciar a transferência
             end
-            DEASSERT_CS : cs_enable = 1'b0; 
-            DONE :        rsp_valid = 1'b1; 
+            DEASSERT_CS : cs_enable = 1'b0; //libera o CS
+            DONE :        rsp_valid = 1'b1; //avisa que a resposta está pronta para ser lida
         endcase
     end 
 endmodule
