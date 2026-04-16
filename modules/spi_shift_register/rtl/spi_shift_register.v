@@ -1,24 +1,22 @@
-// Registrador de deslocamento adaptado para SPI (TX e RX separados)
 module spi_shift_register #(
     parameter WIDTH = 8,
-    parameter MSB_FIRST = 1  // 1 = transmite MSB primeiro, 0 = LSB primeiro
+    parameter MSB_FIRST = 1  //decide a ordem de transmissão: 1 = MSB primeiro, 0 = LSB primeiro
 )(
-    input  wire             clk,
-    input  wire             clear_n,      // clear síncrono ativo em 0
-    input  wire             load,         // carrega parallel_in no TX
+    input wire clk,
+    input wire clear_n,  // clear síncrono ativo em 0
+    input wire load,     // carrega parallel_in no TX
     
-    // Ticks de Controle (vindos do spi_clk_gen)
-    input  wire             shift_edge,   // autoriza deslocar bit para o MOSI
-    input  wire             sample_edge,  // autoriza amostrar bit do MISO
+    // Ticks de envio e amostragem feitas pelo clk_div
+    input  wire shift_edge,   // Desloca o bit da SPI master para o escravo 
+    input  wire sample_edge,  // Amostra o bit da SPI vindo do escravo para o master
     
     // Dados SPI
-    input  wire             serial_in,    // bit que entra (MISO)
-    input  wire [WIDTH-1:0] parallel_in,  // carga paralela para enviar
-    output reg  [WIDTH-1:0] parallel_out, // conteúdo recebido (RX)
-    output wire             serial_out    // bit que sai (MOSI)
+    input  wire serial_in, // MISO
+    input  wire [WIDTH-1:0] parallel_in,  
+    output reg  [WIDTH-1:0] parallel_out, // registrador para salvar a resposta do escravo
+    output wire serial_out  // MOSI
 );
 
-    // Registrador interno exclusivo para transmissão
     reg [WIDTH-1:0] tx_reg;
 
     always @(posedge clk) begin
@@ -27,27 +25,28 @@ module spi_shift_register #(
             parallel_out <= {WIDTH{1'b0}};
         end
         else if (load) begin
-            parallel_out <= {WIDTH{1'b0}}; // Limpa a saída paralela para receber nova transmissão
-            tx_reg <= parallel_in; // Prepara o dado a ser enviado
+            parallel_out <= {WIDTH{1'b0}}; 
+            tx_reg <= parallel_in; // carrega os dados a serem enviados em TX
         end
         else begin
-            // --- Lógica de Recepção (RX) ---
-            // Acionada exclusivamente pelo sample_edge
+            //RX
             if (sample_edge) begin
                 if (MSB_FIRST)
-                    // Entra serial_in no LSB
+                    // Coloca o bit que vem do miso no lsb
                     parallel_out <= {parallel_out[WIDTH-2:0], serial_in};
                 else
-                    // Entra serial_in no MSB
+                    // Coloca o bit que vem do miso no msb
                     parallel_out <= {serial_in, parallel_out[WIDTH-1:1]};
             end
 
-            // --- Lógica de Transmissão (TX) ---
-            // Acionada exclusivamente pelo shift_edge
+            //TX
             if (shift_edge) begin
-                if (MSB_FIRST)
+                if (MSB_FIRST) 
+                    //move a extremidade de TX_reg
+                    // Coloca 0 no lsb e desloca o msb para a direita
                     tx_reg <= {tx_reg[WIDTH-2:0], 1'b0};
                 else
+                    // Coloca 0 no msb e desloca o lsb para a esquerda
                     tx_reg <= {1'b0, tx_reg[WIDTH-1:1]};
             end
         end

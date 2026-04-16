@@ -7,7 +7,7 @@ module tb_spi_register;
     reg shift_edge;
     reg sample_edge;
     reg serial_in;
-    reg [7:0] parallel_in; // Usando 8 bits para simplificar a visualização
+    reg [7:0] parallel_in;
 
     wire [7:0] parallel_out;
     wire serial_out;
@@ -27,16 +27,15 @@ module tb_spi_register;
         $dumpvars(0, tb_spi_register);
 
         clear_n = 0; load = 0; shift_edge = 0; sample_edge = 0;
-        serial_in = 0; parallel_in = 8'b10101100; // Valor a transmitir
-        
+        serial_in = 0; parallel_in = 8'b10101100; 
+
         #25 clear_n = 1;
         
-        // Carrega o dado
         load = 1; #20 load = 0;
 
-        // Simula os "ticks" vindo do gerador de clock
         repeat (8) begin
-            #40 sample_edge = 1; serial_in = ~serial_in; // Simula dado chegando e inverte a cada bit
+            #40 sample_edge = 1; 
+            serial_in = ~serial_in; //flipa a entrada serial para testar a recepção
             #20 sample_edge = 0;
             
             #40 shift_edge = 1;
