@@ -2,16 +2,12 @@
 
 module tb_spi_decoder;
 
-    // 1. Declaração dos Sinais
-    // Entradas do módulo são geradas como 'reg' no testbench
-    reg        cs_enable;
-    reg        daisy_mode;
-    reg  [1:0] slave_id; // $clog2(4) = 2 bits
+    reg        cs_enable; // Sinal de enable 
+    reg        daisy_mode; // Se for daisy mode levanta todo o barramento de CS, caso contrário é um decodificador one-hot
+    reg  [1:0] slave_id; // como o maximo é 4 escravos, o numero de bits para endereçar é 2 
 
-    // Saídas do módulo são lidas como 'wire'
     wire [3:0] cs_out;
 
-    // 2. Instanciação Correta do DUT (Device Under Test)
     spi_cs_decoder #(
         .N_SLAVES(4)
     ) dut (
@@ -21,9 +17,7 @@ module tb_spi_decoder;
         .cs_out(cs_out)
     );
 
-    // 3. Roteiro de Teste
     initial begin
-        // Configuração do GTKWave
         $dumpfile("spi_decoder.vcd");
         $dumpvars(0, tb_spi_decoder);
 
@@ -54,9 +48,8 @@ module tb_spi_decoder;
         cs_enable = 1; daisy_mode = 1;
         
         slave_id = 0; #20; 
-        slave_id = 2; #20; // Tentando chamar o escravo 2...
-        slave_id = 3; #20; // Tentando chamar o escravo 3...
-        // ...mas o cs_out deve continuar teimosamente em 1110!
+        slave_id = 2; #20; 
+        slave_id = 3; #20; 
 
         $display("\nTestes Concluidos com Sucesso!");
         #20 $finish;
