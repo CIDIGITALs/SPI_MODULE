@@ -2,7 +2,6 @@
 
 module spi_config_register_tb;
 
-    // 1. Parâmetros e Sinais
     parameter N = 10;
     
     reg clk;
@@ -12,7 +11,6 @@ module spi_config_register_tb;
     
     wire [N-1:0] data_out;
 
-    // 2. Instanciação do DUT (Device Under Test)
     spi_config_register #(
         .N(N)
     ) dut (
@@ -23,17 +21,15 @@ module spi_config_register_tb;
         .data_out(data_out)
     );
 
-    // 3. Geração de Clock (50 MHz)
+    //configuração do clock
     initial clk = 0;
     always #10 clk = ~clk;
 
-    // 4. Roteiro de Teste
     initial begin
-        // Configuração do GTKWave
         $dumpfile("spi_config_register.vcd");
         $dumpvars(0, spi_config_register_tb);
 
-        // Inicialização Segura (Reset)
+        // Começa com um reset para garantir que o registrador inicie em um estado conhecido
         reset   = 0;
         load    = 0;
         data_in = 10'd0;
@@ -43,7 +39,7 @@ module spi_config_register_tb;
 
         $display("--------------------------------------------------");
         
-        // --- TESTE 1: Carregar um valor normal ---
+        // Carregar um valor e verificar
         $display("[TESTE 1] Tentando carregar o valor 10'h2A5...");
         data_in = 10'h2A5; // Coloca o dado no fio de entrada
         load = 1;          // Dá a ordem para salvar
