@@ -1,63 +1,55 @@
-# Controlador SPI Mestre Multi-Escravo
+# Controlador SPI Mestre Multi-Escravo (IP Core)
 
-Projeto de um módulo SPI mestre em Verilog-2001, desenvolvido com suporte a múltiplos escravos, parametrizável e com controle de *chip select*. O design é modular e projetado para suportar transações complexas, desenvolvido como parte das atividades de Circuitos Digitais na FEEC/Unicamp.
+Projeto de um módulo SPI Mestre (IP Core) em Verilog-2001, desenvolvido com foco em robustez, modularidade e integração agnóstica de barramento. O design é altamente parametrizável, com suporte a múltiplos escravos.
+Desenvolvidos como projeto CI DIGITAL
 
-## 🚀 Características Principais
-
-* **Comunicação Full-Duplex:** Transmissão simultânea via MOSI e recepção via MISO.
-* **Topologias Suportadas:** Implementação compatível com configuração multiponto (vários CS independentes) e *Daisy Chain* (cascata de dados entre dispositivos).
-* **Shift Registers:** Transmissão implementada obrigatoriamente utilizando registradores de deslocamento, sem atribuições diretas paralelas.
-* **Máquina de Estados de Controle:** Controle sequencial da transação implementando os estados: `IDLE`, `FETCH_CMD`, `CONFIG`, `ASSERT_CS`, `TRANSFER`, `DEASSERT_CS` e `DONE`.
-* **Interface de Handshake:** Comunicação assíncrona com o sistema baseada nos sinais `cmd_valid`, `cmd_ready`, `rsp_valid` e `rsp_ready`.
-
-# Controlador SPI Mestre Multi-Escravo
-
-Projeto de um módulo SPI mestre em Verilog-2001, desenvolvido com suporte a múltiplos escravos, parametrizável e com controle de *chip select*. O design é modular e projetado para suportar transações complexas, desenvolvido como parte das atividades de prova do curso CI DIGITAL.
+![Cidigital](images\Logo_Site_CIDigital.png)
 
 ## 🚀 Características Principais
 
 * **Comunicação Full-Duplex:** Transmissão simultânea via MOSI e recepção via MISO.
-* **Topologias Suportadas:** Implementação compatível com configuração multiponto (vários CS independentes) e *Daisy Chain* (cascata de dados entre dispositivos).
-* **Shift Registers:** Transmissão implementada obrigatoriamente utilizando registradores de deslocamento, sem atribuições diretas paralelas.
-* **Máquina de Estados de Controle:** Controle sequencial da transação implementando os estados: `IDLE`, `FETCH_CMD`, `CONFIG`, `ASSERT_CS`, `TRANSFER`, `DEASSERT_CS` e `DONE`.
-* **Interface de Handshake:** Comunicação assíncrona com o sistema baseada nos sinais `cmd_valid`, `cmd_ready`, `rsp_valid` e `rsp_ready`.
+* **Topologias Suportadas:** Implementação nativa e roteamento físico para configuração **Multiponto** (vários CS independentes) e **Daisy Chain** (cascata de dados contínua entre dispositivos).
+* **Configuração Dinâmica:** Suporte a variação de CPOL, CPHA e divisor de clock (`clk_div`) em tempo de execução para cada nova transação.
+* **Arquitetura Agnóstica (Blindagem de Barramento):** Utilização de um registrador estrutural (PIPO) no Top-Level para realizar o *latch* das configurações. O host pode alterar os dados no barramento externo durante uma transação sem corromper o Datapath ou o Gerador de Clock.
+* **Separação de Responsabilidades:** A Máquina de Estados (FSM) gerencia o fluxo temporal (`IDLE`, `TRANSFER`, `DEASSERT_CS`, etc.), enquanto um módulo contador dedicado (`spi_counter`) gerencia os bits enviados e recebidos
+* **Interface de Handshake:** Comunicação assíncrona com o processador host baseada nos sinais `cmd_valid`, `cmd_ready`, `rsp_valid` e `rsp_ready`, facilitando futura integração com barramentos de sistema como AXI-Lite ou APB.
+* **Verificação Automatizada:** Testbench Top-Level com arquitetura *Self-Checking* e scripts Python para automação de build e simulação.
+
+![Arquitetura SPI](images\FSM.png)
+
 
 ## 📂 Arquitetura do Repositório
 
-Este projeto utiliza uma abordagem *IP-centric*. Cada submódulo possui seu próprio diretório isolado contendo seu código fonte (RTL), seu respectivo Testbench (TB) e uma pasta dedicada para os logs e formas de onda gerados na simulação:
+Este projeto utiliza uma abordagem *IP-centric*. Cada submódulo possui seu próprio diretório isolado contendo seu código fonte (RTL), seu respectivo Testbench (TB) e uma pasta dedicada para os logs e formas de onda (`.vcd`):
 
-* `modules/spi_master_system/`: Módulo *top-level* que integra o sistema e gerencia a interface física do protocolo SPI (`sclk`, `mosi`, `miso`, `cs`).
-* `modules/spi_fsm/`: Lógica sequencial e máquina de estados para controle temporal das transações.
-* `modules/spi_shift_register/`: Instanciação dos registradores para manipulação e deslocamento dos bits de dados.
-* `scripts/`: Ferramentas de automação em Python para compilação, testes e geração de boilerplate.
-* `docs/`: Relatório do projeto contendo a motivação, descrição da arquitetura, diagrama de blocos e documentação das interfaces.
+* `modules/spi_master_system/`: Módulo *top-level* que integra o sistema e gerencia a interface física.
+* `modules/spi_fsm/`: Máquina de estados para controle temporal das transações.
+* `modules/spi_clk_gen/`: Gerador de clock da SPI com divisores configuráveis e gerador de bordas (Lead/Trail/Sample/Shift).
+* `modules/spi_shift_register/`: Registrador universal PISO/SIPO para serialização de dados.
+* `modules/spi_counter/`: Contador regressivo para controle exato de bits transmitidos.
+* `modules/spi_decoder/`: Roteador combinatório avançado para gerenciamento dos pinos de Chip Select e caminhos MISO baseados na topologia.
+* `modules/spi_config_register/`: Registrador de blindagem para guardar CPOL CPHA e CLK_DIV vindos da barramento principal.
+* `scripts/`: Ferramentas de automação em Python.
+* `docs/`: Relatório contendo motivação, diagrama de blocos e documentação das interfaces.
 
+### Estrutura de Diretórios
 ```text
 spi-master-project/
 ├── docs/
 │   └── relatorio_projeto_spi.pdf
 ├── modules/
+│   ├── spi_clk/
+│   ├── spi_counter/
+│   ├── spi_decoder/
 │   ├── spi_fsm/
-│   │   ├── resultados/       
-│   │   ├── rtl/
-│   │   │   └── spi_fsm.v
-│   │   └── tb/
-│   │       └── spi_fsm_tb.v
 │   ├── spi_master_system/
-│   │   ├── resultados/
-│   │   ├── rtl/
-│   │   │   └── spi_master_system.v
-│   │   └── tb/
-│   │       └── spi_master_system_tb.v
 │   └── spi_shift_register/
-│       ├── resultados/
-│       ├── rtl/
-│       │   └── spi_shift_register.v
-│       └── tb/
-│           └── spi_shift_register_tb.v
+│       ├── resultados/       # Logs (.log) e Ondas (.vcd) gerados automaticamente
+│       ├── rtl/              # Código fonte Verilog (.v)
+│       └── tb/               # Testbenches (.v)
 ├── scripts/
 │   ├── run_all_tbs.py
-│   └── create_new_module.py
+│   └── create_module.py
 ├── .gitignore
 └── README.md
 
