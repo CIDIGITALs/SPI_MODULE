@@ -28,4 +28,4 @@ Slave 1 contem: 3333 (Esperado: 3333)
 Slave 2 contem: 2222 (Esperado: 2222)
 Slave 3 contem: 1111 (Esperado: 1111)
 --------------------------------------------------
-/home/vinicarvalho/Documents/SPI_MODULE/modules/spi_master_system/tb/spi_master_system_tb.v:234: $finish called at 24850000 (1ps)
+C:\Users\joao9\GitHub\SPI_MODULE\modules\spi_master_system\tb\spi_master_system_tb.v:234: $finish called at 24850000 (1ps)
