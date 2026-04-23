@@ -4,7 +4,7 @@ module spi_clk_gen #(
     input wire clk, // Clock de entrada
     input wire clear_n, // Reset
     input wire enable, 
-    input wire cpol, // Clock Polarity diz se o clock fica em 0 ou 1 quando inativo
+    input wire cpol, // Clock Polarity diz se o sclk fica em 0 ou 1 quando inativo
     input wire cpha, // Clock Phase determina se a amostragem ocorre na borda líder ou traseira
     input wire [DIV_WIDTH-1:0] clk_div,
 
@@ -25,7 +25,7 @@ module spi_clk_gen #(
                        clk_div;
 
     // SCLK deve alternar quando o contador atingir o valor de divisão - 1
-    assign toggle_now = enable && (div_cnt == (div_value - 1'b1));
+    assign toggle_now = enable && (div_cnt == (div_value - 1'b1)); // Conta quantas subidas teve no clock original para gerar o sclk
 
     // CPOL
     // Se SCLK está em repouso e vai mudar, essa é a borda líder
@@ -52,7 +52,7 @@ module spi_clk_gen #(
         end
         else begin
             // bipa sclk quando é um toggle_now
-            if (toggle_now) begin
+            if (toggle_now) begin 
                 div_cnt <= {DIV_WIDTH{1'b0}}; // Reseta o contador
                 sclk    <= ~sclk;
             end

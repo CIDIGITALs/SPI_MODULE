@@ -22,10 +22,10 @@ module spi_fsm (
         IDLE        = 3'b000, 
         FETCH_CMD   = 3'b001, 
         CONFIGURE   = 3'b010, 
-        ASSERT_CS   = 3'b011, 
+        ASSERT_CS   = 3'b011, // Habilita o decodificador de CS para comunicar com o respectivo escravo.
         TRANSFER    = 3'b100, 
-        DEASSERT_CS = 3'b101, 
-        DONE        = 3'b110; 
+        DEASSERT_CS = 3'b101, // Desabilita o decoficador de CS, termina a comunicação com os escravos.
+        DONE        = 3'b110; // Ativa rsp_valid
 
     // Lógica do reset sincrono e transicao de estados
     always @(posedge clk) begin
@@ -44,7 +44,7 @@ module spi_fsm (
             ASSERT_CS :   next_state = TRANSFER;
             TRANSFER : begin
                 if (transfer_done) begin
-                    if (hold_cs) next_state = DONE; // Se hold_cs for 1, vai direto para DONE, mantendo o CS ativo
+                    if (hold_cs) next_state = DONE; // Se hold_cs for 1, vai direto para DONE, mantendo o CS ativo no modo daisy chain.
                     else         next_state = DEASSERT_CS; 
                 end
             end

@@ -5,7 +5,7 @@ module spi_cs_decoder #(
     input wire daisy_mode, // 0 = Multiponto, 1 = Daisy Chain
     input wire [$clog2(N_SLAVES)-1:0] slave_id,   // ID do escravo
     
-    output reg  [N_SLAVES-1:0]  cs_out //pino respectivo ao escravo
+    output reg  [N_SLAVES-1:0]  cs_out //pino respectivo ao escravo 
 );
 
     always @(*) begin
@@ -16,12 +16,12 @@ module spi_cs_decoder #(
             
             if (daisy_mode) begin
                 // No modo daisy chain todos os escravos sao ligados ao mesmo CS
-                cs_out[0] = 1'b0;
+                cs_out[0] = 1'b0; // --> Ativo em baixo
             end 
             
             else begin
                 // No modo multiponto, apenas o escravo selecionado tem seu CS ativado (0)
-                cs_out[slave_id] = 1'b0;
+                cs_out[slave_id] = 1'b0; //--> Ativo em baixo
             end
             
         end
